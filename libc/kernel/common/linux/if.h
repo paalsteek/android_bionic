@@ -20,6 +20,8 @@
 #define _LINUX_IF_H
 #include <linux/types.h>
 #include <linux/socket.h>
+// Engle, fix wifi build
+#include <sys/socket.h>
 /* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
 #include <linux/compiler.h>
 #define IFNAMSIZ 16
