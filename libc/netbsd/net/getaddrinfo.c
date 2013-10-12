@@ -93,6 +93,10 @@
 #include <errno.h>
 #include <netdb.h>
 #include "resolv_private.h"
+// Engle, port from SlimRom, start
+// Commit ab9e011f22af7b217104fb6caabe3544827cf68c
+#include <stdbool.h>
+// Engle, end
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1864,6 +1868,10 @@ error:
 	free(elems);
 }
 
+
+// Engle, port from SlimRom, start
+// Commit ab9e011f22af7b217104fb6caabe3544827cf68
+/*
 static int _using_alt_dns()
 {
 	char propname[PROP_NAME_MAX];
@@ -1876,7 +1884,23 @@ static int _using_alt_dns()
 	}
 	return 0;
 }
+*/
 
+static bool _using_default_dns(const char *iface)
+{
+	char buf[IF_NAMESIZE+1];
+	size_t if_len;
+
+	// common case
+	if (iface == NULL || *iface == '\0') return true;
+
+	if_len = _resolv_get_default_iface(buf, sizeof(buf));
+	if (if_len + 1 <= sizeof(buf)) {
+		if (strcmp(buf, iface) != 0) return false;
+	}
+	return true;
+}
+// Engle, end
 /*ARGSUSED*/
 static int
 _dns_getaddrinfo(void *rv, void	*cb_data, va_list ap)
@@ -1924,7 +1948,11 @@ _dns_getaddrinfo(void *rv, void	*cb_data, va_list ap)
 			// Only implement AI_ADDRCONFIG if the application is not
 			// using its own DNS servers, since our implementation
 			// only works on the default connection.
-			if (!_using_alt_dns()) {
+			// Engle, port from SlimRom, start
+			// Commit ab9e011f22af7b217104fb6caabe3544827cf68
+			// if (!_using_alt_dns()) {
+			if (_using_default_dns(iface)) {
+
 				query_ipv6 = _have_ipv6();
 				query_ipv4 = _have_ipv4();
 			}
@@ -2309,6 +2337,14 @@ res_searchN(const char *name, struct res_target *target, res_state res)
 	if ((!dots && (res->options & RES_DEFNAMES)) ||
 	    (dots && !trailing_dot && (res->options & RES_DNSRCH))) {
 		int done = 0;
+		// Engle, port from SlimRom, start
+		// commit 1bbef291f74f7b8fe64a6619a46c15358b713220
+		/* Unfortunately we need to set stuff up before
+		 * the domain stuff is tried.  Will have a better
+		 * fix after thread pools are used.
+		 */
+		_resolv_populate_res_for_iface(res);
+		// Engle, end
 
 		for (domain = (const char * const *)res->dnsrch;
 		   *domain && !done;

@@ -495,13 +495,6 @@ ifeq ($(TARGET_ARCH),arm)
   libc_common_cflags += -DSOFTFLOAT
   libc_common_cflags += -fstrict-aliasing
   libc_crt_target_cflags := -mthumb-interwork
-  # Engle, 添加优化
-  ifeq ($(TARGET_CPU_VARIANT), cortex-a8)
-    libc_common_cflags += -O3 -mtune=cortex-a8 -mfpu=neon \
-                         -mfloat-abi=softfp -march=armv7-a
-    libc_crt_target_cflags := -O3 -mtune=cortex-a8 -mfpu=neon \
-                         -mfloat-abi=softfp -march=armv7-a
-  endif
 endif # !arm
 
 ifeq ($(TARGET_ARCH),x86)

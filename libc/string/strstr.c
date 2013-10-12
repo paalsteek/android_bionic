@@ -36,6 +36,8 @@
 /*
  * Find the first occurrence of find in s.
  */
+// Engle, port from http://review.cyanogenmod.org/#/c/32348/2/libc/string/strstr.c
+/*
 char *
 strstr(const char *s, const char *find)
 {
@@ -53,4 +55,77 @@ strstr(const char *s, const char *find)
 		s--;
 	}
 	return ((char *)s);
+}
+*/
+
+typedef unsigned chartype;
+char * strstr(phaystack, pneedle)
+	const char *phaystack;
+	const char *pneedle;
+{
+	const unsigned char *haystack, *needle;
+	chartype b;
+	const unsigned char *rneedle;
+
+	haystack = (const unsigned char *) phaystack;
+	if ((b = *(needle = (const unsigned char *) pneedle))) {
+		chartype c;
+		haystack--; /* possible ANSI violation */
+		{
+			chartype a;
+			do {
+				if (!(a = *++haystack))
+					goto ret0;
+			} while (a != b);
+		}
+
+		if (!(c = *++needle))
+			goto foundneedle;
+		++needle;
+		goto jin;
+
+		for (;;) {
+			{
+				chartype a;
+				if (0)
+					jin: {
+						if ((a = *++haystack) == c)
+							goto crest;
+					}
+				else
+					a = *++haystack;
+				do {
+					for (; a != b; a = *++haystack) {
+						if (!a)
+							goto ret0;
+						if ((a = *++haystack) == b)
+							break;
+						if (!a)
+							goto ret0;
+					}
+				} while ((a = *++haystack) != c);
+			}
+			crest: {
+				chartype a;
+				{
+					const unsigned char *rhaystack;
+					if (*(rhaystack = haystack-- + 1) == (a =
+							*(rneedle = needle)))
+						do {
+							if (!a)
+								goto foundneedle;
+							if (*++rhaystack != (a = *++needle))
+								break;
+							if (!a)
+								goto foundneedle;
+						} while (*++rhaystack == (a = *++needle));
+					needle = rneedle; /* took the register-poor aproach */
+				}
+				if (!a)
+					break;
+			}
+		}
+	}
+	foundneedle: return (char *) haystack;
+	ret0: return 0;
 }
